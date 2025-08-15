@@ -1,0 +1,38 @@
+services:
+  convex-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.convex
+    ports:
+      - "4000:4000"
+    environment:
+      CONVEX_DEPLOY_KEY: ${CONVEX_DEPLOY_KEY}
+      CONVEX_URL: ${CONVEX_URL:-http://convex-backend:4000}
+    networks:
+      - applause_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      REACT_APP_CONVEX_URL: ${CONVEX_URL:-http://convex-backend:4000}
+    depends_on:
+      - convex-backend
+    networks:
+      - applause_net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+networks:
+  applause_net:
+    driver: bridge
